@@ -1,0 +1,1 @@
+SELECT ?subject ?object WHERE {?subject <http://example.org/property/predicate10> ?object . ?subject <http://example.org/property/predicate8> ?object1}

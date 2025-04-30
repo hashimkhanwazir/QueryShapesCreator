@@ -1,5 +1,6 @@
 com/example/QueryShapeDetector.class
-com/example/HDTQueryExample.class
 com/example/QueryShapeBatchProcessor.class
-com/example/ShapeToQueryConverter.class
+com/example/HDTQueryExample.class
+com/example/QueryShapeSingleProcessor.class
 com/example/QueryUtils.class
+com/example/ShapeToQueryConverter.class

@@ -3,6 +3,7 @@ package com.example;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
 
@@ -40,9 +41,8 @@ public class QueryShapeBatchProcessor {
         for (File file : files) {
             System.out.println("\n=== Processing file: " + file.getName() + " ===");
             String queryStr;
-
             try {
-                queryStr = Files.readString(file.toPath());
+                queryStr = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
             } catch (IOException e) {
                 System.err.println("Error reading file " + file.getName() + ": " + e.getMessage());
                 continue;
@@ -55,9 +55,6 @@ public class QueryShapeBatchProcessor {
                     System.out.println("Detected Shapes (Combination " + counter++ + "):");
                     for (String shape : combination) {
                         System.out.println(shape);
-                        // 🔧 Step 1: Print triples in the shape
-                        System.out.println(">> Extracted Triple Patterns:");
-                    //    QueryUtils.printTriples(shape);
                     }
                     System.out.println("----------------------------");
                 }

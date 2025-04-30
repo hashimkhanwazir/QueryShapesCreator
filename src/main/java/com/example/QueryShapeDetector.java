@@ -39,10 +39,14 @@ public class QueryShapeDetector {
             Triple t1 = triples.get(i);
             if (used.contains(t1)) continue;
 
-            // Star
+            // Star shape: same subject
             Set<Triple> star = new HashSet<>();
             Node s = t1.getSubject();
-            for (Triple t : triples) if (!used.contains(t) && t.getSubject().equals(s)) star.add(t);
+            for (Triple t : triples) {
+                if (!used.contains(t) && t.getSubject().equals(s)) {
+                    star.add(t);
+                }
+            }
             if (star.size() > 1) {
                 used.addAll(star);
                 currentShapes.add(star);
@@ -51,10 +55,14 @@ public class QueryShapeDetector {
                 used.removeAll(star);
             }
 
-            // Sink
+            // Sink shape: same object
             Set<Triple> sink = new HashSet<>();
             Node o = t1.getObject();
-            for (Triple t : triples) if (!used.contains(t) && t.getObject().equals(o)) sink.add(t);
+            for (Triple t : triples) {
+                if (!used.contains(t) && t.getObject().equals(o)) {
+                    sink.add(t);
+                }
+            }
             if (sink.size() > 1) {
                 used.addAll(sink);
                 currentShapes.add(sink);
@@ -63,52 +71,65 @@ public class QueryShapeDetector {
                 used.removeAll(sink);
             }
 
-            // Path
-            for (int j = 0; j < triples.size(); j++) {
-                if (i == j || used.contains(triples.get(j))) continue;
-                Triple t2 = triples.get(j);
-                if (t1.getObject().equals(t2.getSubject())) {
-                    Set<Triple> path = new LinkedHashSet<>();
-                    path.add(t1);
-                    path.add(t2);
-                    used.addAll(path);
-                    currentShapes.add(path);
-                    detectShapesRecursive(triples, used, currentShapes, allSets);
-                    currentShapes.remove(currentShapes.size() - 1);
-                    used.removeAll(path);
-                }
+            // Path shape: recursively follow chains
+            Set<Triple> path = new LinkedHashSet<>();
+            buildPathShape(t1, triples, used, path);
+
+            if (path.size() > 1) {
+                used.addAll(path);
+                currentShapes.add(path);
+                detectShapesRecursive(triples, used, currentShapes, allSets);
+                currentShapes.remove(currentShapes.size() - 1);
+                used.removeAll(path);
             }
 
-            // Single
-            Set<Triple> single = Set.of(t1);
+            // Single triple
+            Set<Triple> single = new HashSet<>();
+            single.add(t1);
             used.add(t1);
             currentShapes.add(single);
             detectShapesRecursive(triples, used, currentShapes, allSets);
             currentShapes.remove(currentShapes.size() - 1);
             used.remove(t1);
 
-            break; // important: don't reuse same start triple multiple times
+            break; // Only proceed with one starting point at a time
+        }
+    }
+
+    private static void buildPathShape(Triple start, List<Triple> triples, Set<Triple> used, Set<Triple> path) {
+        path.add(start);
+        Node currentObj = start.getObject();
+
+        for (Triple t : triples) {
+            if (!used.contains(t) && !path.contains(t) && currentObj.equals(t.getSubject())) {
+                buildPathShape(t, triples, used, path);
+                break; // Only follow one chain
+            }
         }
     }
 
     public static String detectShapeType(Set<Triple> shape) {
         if (shape.size() == 1) return "Single";
+
         Set<Node> subjects = new HashSet<>();
         Set<Node> objects = new HashSet<>();
         for (Triple t : shape) {
             subjects.add(t.getSubject());
             objects.add(t.getObject());
         }
+
         if (subjects.size() == 1) return "Star";
         if (objects.size() == 1) return "Sink";
-        Iterator<Triple> it = shape.iterator();
-        Triple prev = it.next();
-        while (it.hasNext()) {
-            Triple next = it.next();
-            if (!prev.getObject().equals(next.getSubject())) return "Unknown";
-            prev = next;
+
+        List<Triple> list = new ArrayList<>(shape);
+        boolean isPath = true;
+        for (int i = 0; i < list.size() - 1; i++) {
+            if (!list.get(i).getObject().equals(list.get(i + 1).getSubject())) {
+                isPath = false;
+                break;
+            }
         }
-        return "Path";
+        return isPath ? "Path" : "Unknown";
     }
 
     public static String shapeToString(Set<Triple> shape) {
@@ -121,25 +142,10 @@ public class QueryShapeDetector {
         return sb.toString();
     }
 
-    // ✅ Cleaned and final version of detectFormattedShapes()
     public static List<List<String>> detectFormattedShapes(String queryStr) {
-        Query query = QueryFactory.create(queryStr);
-        ElementGroup group = (ElementGroup) query.getQueryPattern();
-
-        List<Triple> triples = new ArrayList<>();
-        for (Element el : group.getElements()) {
-            if (el instanceof ElementPathBlock) {
-                ElementPathBlock epb = (ElementPathBlock) el;
-                epb.patternElts().forEachRemaining(tp -> {
-                    if (tp.isTriple()) triples.add(tp.asTriple());
-                });
-            }
-        }
-
-        List<List<Set<Triple>>> allShapeSets = new ArrayList<>();
-        detectShapesRecursive(triples, new HashSet<>(), new ArrayList<>(), allShapeSets);
-
+        List<List<Set<Triple>>> allShapeSets = detectQueryShapes(queryStr);
         List<List<String>> result = new ArrayList<>();
+
         for (List<Set<Triple>> shapeSet : allShapeSets) {
             List<String> formatted = new ArrayList<>();
             for (Set<Triple> shape : shapeSet) {
@@ -148,6 +154,8 @@ public class QueryShapeDetector {
             }
             result.add(formatted);
         }
+
         return result;
     }
 }
+

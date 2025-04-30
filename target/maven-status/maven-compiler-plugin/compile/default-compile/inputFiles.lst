@@ -1,5 +1,6 @@
-/Users/hashimkhan/Documents/java-mvn-practice/hdt-based-project/hdt-sparql-project/src/main/java/com/example/HDTQueryExample.java
-/Users/hashimkhan/Documents/java-mvn-practice/hdt-based-project/hdt-sparql-project/src/main/java/com/example/QueryShapeBatchProcessor.java
-/Users/hashimkhan/Documents/java-mvn-practice/hdt-based-project/hdt-sparql-project/src/main/java/com/example/QueryShapeDetector.java
-/Users/hashimkhan/Documents/java-mvn-practice/hdt-based-project/hdt-sparql-project/src/main/java/com/example/QueryUtils.java
-/Users/hashimkhan/Documents/java-mvn-practice/hdt-based-project/hdt-sparql-project/src/main/java/com/example/ShapeToQueryConverter.java
+/home/hashim/Documents/forked-repo/QueryShapesCreator/src/main/java/com/example/QueryShapeDetector.java
+/home/hashim/Documents/forked-repo/QueryShapesCreator/src/main/java/com/example/HDTQueryExample.java
+/home/hashim/Documents/forked-repo/QueryShapesCreator/src/main/java/com/example/QueryUtils.java
+/home/hashim/Documents/forked-repo/QueryShapesCreator/src/main/java/com/example/ShapeToQueryConverter.java
+/home/hashim/Documents/forked-repo/QueryShapesCreator/src/main/java/com/example/QueryShapeSingleProcessor.java
+/home/hashim/Documents/forked-repo/QueryShapesCreator/src/main/java/com/example/QueryShapeBatchProcessor.java
